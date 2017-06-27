@@ -1,6 +1,6 @@
-    AREA  asm_data, DATA, READWRITE
+AREA  asm_data, DATA, READWRITE
 
-// It is likely not all of these definitions are needed but I   
+// It is likely not all of these definitions are needed but I don't know yet
 PORTA_BASE             EQU  0x40049000
 PORTB_BASE             EQU  0x4004A000
 PORTC_BASE             EQU  0x4004B000
@@ -43,7 +43,6 @@ GPIO_PTOR               EQU  0x0C   ; Port Toggle Output Register, offset: 0xC
 GPIO_PDIR               EQU  0x10   ; Port Data Input Register, offset: 0x10
 GPIO_PDDR               EQU  0x14   ; Port Data Direction Register, offset: 0x14
 
-
 RESET_STATE     EQU  0x00
 BLINK_STATE     EQU  0x01
 BUTTON_CHECK    EQU  0x03
@@ -61,11 +60,11 @@ pat DCD 0xAAAAAAAA
 m_z DCD 0x4626
 m_w DCD 0x6558
 
-    AREA asm_func, CODE, READONLY
+AREA asm_func, CODE, READONLY
 
     
-    EXPORT play_game
-    EXPORT init_game
+EXPORT play_game
+EXPORT init_game
 
 //**************************************************//
 init_game
@@ -97,8 +96,6 @@ init_game
     ADDS R0, R0, R1
     LDR R1, =pat
     STR R0, [R1]        //store the new pattern
-    
-
     
 init_done    
     
@@ -169,8 +166,7 @@ win   // Turn green on and red off
     BX      LR
     
 //************************************************//
-blink
-   
+blink  
 
 // Cycle the LEDs so there is a off state between each blink
 
@@ -192,7 +188,6 @@ green_check
     LDR R2, =0
     CMP R1, R2   
     BEQ red_off
-    
     BNE blinking     
 
 green_off
@@ -212,8 +207,6 @@ red_off
     BX      LR
     
 //**************************************************************//
-
-//  
 blinking 
     
     // Check if the round is over
@@ -240,13 +233,7 @@ blinking
     LDR     R0, =count
     LDR     R2, [R0]
     RORS    R1, R1, R2      // Rotate
-
-    
-
-    
     BCS     passover        // Branch if there is a carry bit
-    
-    
     LDR     R0, =GPIOD_BASE 
     LDR     R1, =(1<<5)
     STR     R1, [R0, #GPIO_PSOR]
@@ -263,14 +250,11 @@ passover
     LDR     R1, =(1<<29)
     STR     R1, [R0, #GPIO_PSOR]
     
-
 blink_done
     // Update state
     LDR     R0, =BLINK_STATE
     LDR     R1, =state        
     LDR     R0, [R1]
-   
-    
     BX  LR
     
 blink_finished
@@ -279,13 +263,11 @@ blink_finished
     LDR R0, =1
     STR R0, [R1]
     
-    
     // Update state
     LDR R0, =BUTTON_CHECK
     LDR R1, =state
     STR R0, [R1]
     BX  LR
- 
 
 //********************************************//
 button_check
@@ -299,9 +281,7 @@ button_check
     CMP R1, R0
     // Round over?
     BEQ checking_done
-    
 
-    
     LDR     R2, =input_count
     LDR     R0, [R2]
     LDR     R3, =pat
@@ -316,7 +296,6 @@ button_check
     // Check right if no carry bit
     B     right_check       
                             
-    
     
 left_check
     
