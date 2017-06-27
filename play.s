@@ -1,6 +1,6 @@
 AREA  asm_data, DATA, READWRITE
 
-// It is likely not all of these definitions are needed but I don't know yet
+;It is likely not all of these definitions are needed but I don't know yet
 PORTA_BASE             EQU  0x40049000
 PORTB_BASE             EQU  0x4004A000
 PORTC_BASE             EQU  0x4004B000
@@ -48,7 +48,7 @@ BLINK_STATE     EQU  0x01
 BUTTON_CHECK    EQU  0x03
 WIN_STATE       EQU  0x04
 LOSE_STATE      EQU  0x05
-WIN_MAX         EQU  33      // Add one to prevent off-by-one
+WIN_MAX         EQU  33      ;Add one to prevent off-by-one
 
 count DCD 0x00
 input_count DCD 0x00
@@ -66,40 +66,41 @@ AREA asm_func, CODE, READONLY
 EXPORT play_game
 EXPORT init_game
 
-//**************************************************//
+;**************************************************
 init_game
-    // Random code generated here
+
+    ;Random seed generated here
 
     LDR R2, =m_z
     LDR R0,[R2]
     LDR R2, =0xFFFF
-    ANDS R2, R0, R2     // (m_z & 0xFFFF)
+    ANDS R2, R0, R2     ; (m_z & 0xFFFF)
     LDR R3, = 0x9069    
-    MULS R2, R3, R2     // 0x9069 * (m_z & 0xFFFF)
-    LSRS R3, R0, #16    // (m_z >> 16)
-    ADDS R0, R3, R2     // 0x9069 * (m_z & 0xFFFF) + (m_z >> 16)
+    MULS R2, R3, R2     ; 0x9069 * (m_z & 0xFFFF)
+    LSRS R3, R0, #16    ; (m_z >> 16)
+    ADDS R0, R3, R2     ; 0x9069 * (m_z & 0xFFFF) + (m_z >> 16)
     LDR R2, =m_z
     STR R0, [R2]
 
     LDR R2, =m_w
     LDR R1,[R2]
     LDR R2, =0xFFFF     
-    ANDS R2, R1, R2     // (m_w & 0xFFFF)
+    ANDS R2, R1, R2     ; (m_w & 0xFFFF)
     LDR R3, = 0x4650    
-    MULS R2, R3, R2     // 0x4650 * (m_w & 0xFFFF)
-    LSRS R3, R1, #16    // (m_w >> 16)
-    ADDS R1, R3, R2     // 0x4650 * (m_w & 0xFFFF) + (m_w >> 16)
+    MULS R2, R3, R2     ; 0x4650 * (m_w & 0xFFFF)
+    LSRS R3, R1, #16    ; (m_w >> 16)
+    ADDS R1, R3, R2     ; 0x4650 * (m_w & 0xFFFF) + (m_w >> 16)
     LDR R2, =m_w
     STR R1, [R2]
     
-    LSLS R0, R0, #16    //(m_z << 16) + m_w
+    LSLS R0, R0, #16    ; (m_z << 16) + m_w
     ADDS R0, R0, R1
     LDR R1, =pat
-    STR R0, [R1]        //store the new pattern
+    STR R0, [R1]        ; store the new pattern
     
 init_done    
     
-    // Force LEDs off
+    ;Force LEDs off
     LDR     R0, =GPIOD_BASE 
     LDR     R1, =(1<<5)
     STR     R1, [R0, #GPIO_PSOR]
@@ -107,7 +108,7 @@ init_done
     LDR     R1, =(1<<29)
     STR     R1, [R0, #GPIO_PSOR]
     
-    // Update state
+    ;Update state
     LDR R0, =BLINK_STATE
     LDR R1, =state
     STR R0, [R1] 
@@ -116,10 +117,10 @@ init_done
     BX      LR
  
  
-//***************************************//
+;***************************************
 play_game 
 
-//check the states   
+;Check the states   
     
     LDR R1, =state
     LDR R0, [R1]
@@ -144,7 +145,7 @@ play_game
     CMP R1, R0
     BEQ win
     
-lose  // Turn red on and green off
+lose  ;Turn red on and green off
     LDR     R0, =GPIOE_BASE
     LDR     R1, =(1<<29)
     STR     R1, [R0, #GPIO_PCOR]
@@ -153,22 +154,22 @@ lose  // Turn red on and green off
     STR     R1, [R0, #GPIO_PSOR]
     BX      LR
 
-win   // Turn green on and red off
+win   ;Turn green on and red off
     LDR     R0, =GPIOD_BASE
     LDR     R1, =(1<<5)
     STR     R1, [R0, #GPIO_PCOR]
     LDR     R0, =GPIOE_BASE
     LDR     R1, =(1<<29)
     STR     R1, [R0, #GPIO_PSOR]
-    LDR R0, =WIN_STATE              // Update the state
+    LDR R0, =WIN_STATE              ;Update the state
     LDR R1, =state
     STR R0, [R1]
     BX      LR
     
-//************************************************//
+;************************************************
 blink  
 
-// Cycle the LEDs so there is a off state between each blink
+;Cycle the LEDs so there is a off state between each blink
 
 green_check
     LDR R0, =GPIOD_BASE
@@ -178,8 +179,6 @@ green_check
     LDR R2, =0
     CMP R1, R2   
     BEQ green_off
-    
-    
     
     LDR R0, =GPIOE_BASE
     LDR R1, =(1<<29)
@@ -202,14 +201,13 @@ red_off
     LDR     R0, =GPIOE_BASE
     LDR     R1, =(1<<29)
     STR     R1, [R0, #GPIO_PTOR]
-     
     LDR R0, =BLINK_STATE
     BX      LR
     
-//**************************************************************//
+;**************************************************************
 blinking 
     
-    // Check if the round is over
+    ;Check if the round is over
     LDR     R1, =max
     LDR     R0, [R1]
     LDR     R1, =count
@@ -217,23 +215,23 @@ blinking
     CMP     R2, R0
     BGE     blink_finished
     
-    // Check if player has won
+    ;Check if player has won
     CMP     R0, #WIN_MAX
     BEQ     win
     
-    // Else increment count
+    ;Else increment count
     LDR     R3, =1
     ADDS    R2, R2, R3
     LDR     R1, =count
     STR     R2, [R1]
     
-    // Load flash patteren
+    ;Load flash patteren
     LDR     R0, =pat
     LDR     R1, [R0]
     LDR     R0, =count
     LDR     R2, [R0]
-    RORS    R1, R1, R2      // Rotate
-    BCS     passover        // Branch if there is a carry bit
+    RORS    R1, R1, R2      ;Rotate
+    BCS     passover        ;Branch if there is a carry bit
     LDR     R0, =GPIOD_BASE 
     LDR     R1, =(1<<5)
     STR     R1, [R0, #GPIO_PSOR]
@@ -251,7 +249,7 @@ passover
     STR     R1, [R0, #GPIO_PSOR]
     
 blink_done
-    // Update state
+    ;Update state
     LDR     R0, =BLINK_STATE
     LDR     R1, =state        
     LDR     R0, [R1]
@@ -263,13 +261,13 @@ blink_finished
     LDR R0, =1
     STR R0, [R1]
     
-    // Update state
+    ;Update state
     LDR R0, =BUTTON_CHECK
     LDR R1, =state
     STR R0, [R1]
     BX  LR
 
-//********************************************//
+;********************************************
 button_check
     
     LDR     R2, =input_count
@@ -279,7 +277,7 @@ button_check
     LDR     R3, =1
     SUBS    R0, R0, R3      
     CMP R1, R0
-    // Round over?
+    ;Round over?
     BEQ checking_done
 
     LDR     R2, =input_count
@@ -287,13 +285,13 @@ button_check
     LDR     R3, =pat
     LDR     R2, [R3]
     
-    // Step to next bit
+    ;Step to next bit
     RORS    R2, R2, R0      
     
-    // Check left if carry bit exists
+    ;Check left if carry bit exists
     BCS     left_check      
 
-    // Check right if no carry bit
+    ;Check right if no carry bit
     B     right_check       
                             
     
@@ -305,31 +303,27 @@ button_left
     LDR R2, [R0,#GPIO_PDIR] 
     ANDS R1, R1, R2 
     LDR R2, =0
-    CMP R1, R2              // Check if left_button was pressed
+    CMP R1, R2              ;Check if left_button was pressed
     BEQ set_left
     BNE check_left
   
-
-set_left                    // Set left_press to 1 when pressed or held   
-    
+set_left                    ;Set left_press to 1 when pressed or held   
 
     LDR     R3, =left_press
     LDR     R4, =1
     STR     R4, [R3]
+    B       button_right    ;Step to next button
     
-    B       button_right    // Step to next button
-    
-check_left                  // Button state not pressed
-    
+check_left                  ;Button state not pressed
 
     LDR     R3, =left_press
     LDR     R4, [R3]
-    CMP     R4, #1          // Check for button press
-    BEQ     toggle_left     // Toggle if it has
+    CMP     R4, #1          ;Check for button press
+    BEQ     toggle_left     ;Toggle if it has
     B       button_right
     
 toggle_left  
-    LDR     R3, =left_press  // Press is correct, increment and move on
+    LDR     R3, =left_press  ;Press is correct, increment and move on
     LDR     R4, =0
     STR     R4, [R3]
     LDR     R2, =input_count
@@ -337,8 +331,7 @@ toggle_left
     LDR     R3, =1
     ADDS    R0, R0, R3
     LDR     R3, =input_count
-    STR     R0, [R3]    
-
+    STR     R0, [R3]
     LDR     R0, =BUTTON_CHECK
     BX      LR
     
@@ -348,26 +341,25 @@ button_right
     LDR R2, [R0,#GPIO_PDIR] 
     ANDS R1, R1, R2 
     LDR R2, =0
-    CMP R1, R2                  // Check for right button press
+    CMP R1, R2                  ; Check for right button press
     BEQ set_right
     BNE check_right
   
 
-set_right                       // Set right_press to 1 on press    
+set_right                       ; Set right_press to 1 on press    
     LDR     R3, =right_press
     LDR     R4, =1
     STR     R4, [R3]
-    
     B       done
     
-check_right                     // Button state not pressed
+check_right                     ; Button state not pressed
     LDR     R4, =right_press
     LDR     R3, [R4]
-    CMP     R3, #1              // Check for button press
-    BEQ     toggle_right        // Toggle if it has
+    CMP     R3, #1              ; Check for button press
+    BEQ     toggle_right        ; Toggle if it has
     B       done
     
-toggle_right                    // Lose state      
+toggle_right                    ; Lose state      
 
    
     LDR     R2, =state
@@ -386,30 +378,30 @@ button_left_right
     LDR R2, [R0,#GPIO_PDIR] 
     ANDS R1, R1, R2 
     LDR R2, =0
-    CMP R1, R2                  // Check for left button press
+    CMP R1, R2                  ; Check for left button press
     BEQ set_left_right
     BNE check_left_right
   
 
-set_left_right                  // Set left_press to 1 on press   
+set_left_right                  ; Set left_press to 1 on press   
     
 
     LDR     R3, =left_press
     LDR     R4, =1
     STR     R4, [R3]
     
-    B       button_right_right  // Move on to next button
+    B       button_right_right  ; Move on to next button
     
-check_left_right                // 
+check_left_right                
     
 
     LDR     R3, =left_press
     LDR     R4, [R3]
-    CMP     R4, #1              // Check for button press
-    BEQ     toggle_left_right   // Toggle if it has
+    CMP     R4, #1              ; Check for button press
+    BEQ     toggle_left_right   ; Toggle if it has
     B       button_right_right
     
-toggle_left_right               // Lose state
+toggle_left_right               ; Lose state
 
     LDR     R2, =state
     LDR     R0, =LOSE_STATE
@@ -424,26 +416,26 @@ button_right_right
     LDR R2, [R0,#GPIO_PDIR] 
     ANDS R1, R1, R2 
     LDR R2, =0
-    CMP R1, R2                  // Check if right button was pressed
+    CMP R1, R2                  ; Check if right button was pressed
     BEQ set_right_right
     BNE check_right_right
   
 
-set_right_right                 // Set right_press to 1 on press    
+set_right_right                 ; Set right_press to 1 on press    
     LDR     R3, =right_press
     LDR     R4, =1
     STR     R4, [R3]
     
     B       done_right
     
-check_right_right               // Button currently not pressed
+check_right_right               ; Button currently not pressed
     LDR     R4, =right_press
     LDR     R3, [R4]
-    CMP     R3, #1              // Check if it has been pressed
-    BEQ     toggle_right_right  // Toggle if it has
+    CMP     R3, #1              ; Check if it has been pressed
+    BEQ     toggle_right_right  ; Toggle if it has
     B       done_right
     
-toggle_right_right              // Correct input, increment and continue
+toggle_right_right              ; Correct input, increment and continue
        
     LDR     R3, =right_press
     LDR     R4, =0
@@ -459,13 +451,13 @@ toggle_right_right              // Correct input, increment and continue
     LDR     R0, =BUTTON_CHECK    
     BX      LR
 done_right 
-    LDR R0, =BUTTON_CHECK       // Update state
+    LDR R0, =BUTTON_CHECK       ; Update state
     BX      LR
          
     
 still_checking
     
-    LDR R0, =BUTTON_CHECK       // Update state
+    LDR R0, =BUTTON_CHECK       ; Update state
     LDR R1, =state
     STR R0, [R1]
     
@@ -473,19 +465,19 @@ still_checking
 
 checking_done
     
-    LDR R1, =0                  // Set count=0
+    LDR R1, =0                  ; Set count=0
     LDR R2, =count
     STR R1, [R2]
     LDR R2, =input_count
     STR R1, [R2]
     
-    LDR  R1, =1                 // Increment max
+    LDR  R1, =1                 ; Increment max
     LDR  R2, =max
     LDR  R0, [R2]
     ADDS R0, R0, R1
     STR  R0, [R2]
     
-    // Reset tje blink state
+    ; Reset the blink state
     LDR     R0, =BLINK_STATE
     LDR     R1, =state
     STR     R0, [R1]
